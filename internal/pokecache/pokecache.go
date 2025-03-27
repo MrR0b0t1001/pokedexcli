@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-const customExpiration time.Duration = 10 * time.Second
-
 type Cache struct {
 	cacheMap   map[string]cacheEntry
 	expiration time.Duration
@@ -18,10 +16,10 @@ type cacheEntry struct {
 	val       []byte
 }
 
-func NewCache() *Cache {
+func NewCache(expiration time.Duration) *Cache {
 	cache := &Cache{
 		cacheMap:   map[string]cacheEntry{},
-		expiration: customExpiration,
+		expiration: expiration,
 	}
 
 	go cache.reapLoop()
