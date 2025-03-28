@@ -7,6 +7,7 @@ import (
 
 	cli "github.com/MrR0b0t1001/pokedexcli/internal/cliCommand"
 	cf "github.com/MrR0b0t1001/pokedexcli/internal/config"
+	pk "github.com/MrR0b0t1001/pokedexcli/internal/pokemon"
 )
 
 func printError(err error) {
@@ -45,11 +46,19 @@ func main() {
 			Description: "Catch a pokemon",
 			Callback:    cli.CommandCatch,
 		},
+		"inspect": {
+			Name:        "inspect",
+			Description: "Inspect a caught pokemon's info",
+			Callback:    cli.CommandInspect,
+		},
 	}
 	scanner := bufio.NewScanner(os.Stdin)
 	cnfg := &cf.Config{
 		Next:     nil,
 		Previous: nil,
+	}
+	pokedex := &pk.Pokedex{
+		Pkdex: map[string]pk.Pokemon{},
 	}
 	for {
 		fmt.Print("Pokedex > ")
@@ -63,19 +72,24 @@ func main() {
 				continue
 			}
 
-			if cmd.Name == "explore" {
-				err := cmd.Callback(cnfg, cleaned[1])
+			switch cmd.Name {
+			case "explore":
+				err := cmd.Callback(cnfg, cleaned[1], pokedex)
 				if err != nil {
 					printError(err)
 				}
-			} else if cmd.Name == "catch" {
-				err := cmd.Callback(cnfg, cleaned[1])
+			case "catch":
+				err := cmd.Callback(cnfg, cleaned[1], pokedex)
 				if err != nil {
 					printError(err)
 				}
-
-			} else {
-				err := cmd.Callback(cnfg, "")
+			case "inspect":
+				err := cmd.Callback(cnfg, cleaned[1], pokedex)
+				if err != nil {
+					printError(err)
+				}
+			default:
+				err := cmd.Callback(cnfg, "", pokedex)
 				if err != nil {
 					printError(err)
 				}
@@ -83,7 +97,7 @@ func main() {
 
 			fmt.Print("\n\nUsage:\n")
 			for _, val := range supportedCommands {
-				fmt.Printf("%v: %v\n", val.Name, val.Description)
+				fmt.Printf("\n%v: %v\n", val.Name, val.Description)
 			}
 		}
 		if err := scanner.Err(); err != nil {

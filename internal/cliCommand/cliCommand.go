@@ -18,25 +18,25 @@ import (
 type CliCommand struct {
 	Name        string
 	Description string
-	Callback    func(cnfg *cf.Config, name string) error
+	Callback    func(cnfg *cf.Config, name string, pokedex *pk.Pokedex) error
 }
 
 func CleanInput(text string) []string {
 	return strings.Fields(text)
 }
 
-func CommandExit(cnfg *cf.Config, name string) error {
+func CommandExit(cnfg *cf.Config, name string, pokedex *pk.Pokedex) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func CommandHelp(cnfg *cf.Config, name string) error {
+func CommandHelp(cnfg *cf.Config, name string, pokedex *pk.Pokedex) error {
 	fmt.Println("Welcome to the Pokedex!")
 	return nil
 }
 
-func CommandMap(cnfg *cf.Config, name string) error {
+func CommandMap(cnfg *cf.Config, name string, pokedex *pk.Pokedex) error {
 	fmt.Println("This is the map!")
 	// We need to make a request to the Poke API to retrieve locations
 	var expiration time.Duration = 20 * time.Second
@@ -90,7 +90,7 @@ func CommandMap(cnfg *cf.Config, name string) error {
 	return nil
 }
 
-func CommandMapB(cnfg *cf.Config, name string) error {
+func CommandMapB(cnfg *cf.Config, name string, pokedex *pk.Pokedex) error {
 	// We need to make a request to the Poke API to retrieve locations
 	if cnfg.Previous == nil {
 		fmt.Println("This is the first page")
@@ -147,7 +147,7 @@ func CommandMapB(cnfg *cf.Config, name string) error {
 	return nil
 }
 
-func CommandExplore(cfng *cf.Config, name string) error {
+func CommandExplore(cfng *cf.Config, name string, pokedex *pk.Pokedex) error {
 	url := "https://pokeapi.co/api/v2/location-area/" + name
 
 	var expiration time.Duration = 20 * time.Second
@@ -206,9 +206,10 @@ func catchPokemon(exp int) bool {
 	// if that number matches our secretNum then pokemon caught
 	// scales based on the Experience
 	expStr := strconv.Itoa(exp)
-	firstDigit, err := strconv.Atoi(string(expStr[0]))
-	if err != nil {
-		return false
+	firstDigit := 1
+
+	if len(expStr) >= 3 {
+		firstDigit, _ = strconv.Atoi(string(expStr[0]))
 	}
 
 	secretNum := r.Intn(firstDigit) + 1
@@ -220,7 +221,7 @@ func catchPokemon(exp int) bool {
 	return false
 }
 
-func CommandCatch(cnfg *cf.Config, name string) error {
+func CommandCatch(cnfg *cf.Config, name string, pokedex *pk.Pokedex) error {
 	url := "https://pokeapi.co/api/v2/pokemon/" + name
 
 	res, err := http.Get(url)
@@ -241,9 +242,34 @@ func CommandCatch(cnfg *cf.Config, name string) error {
 		fmt.Printf("%v escaped!\n", name)
 	} else {
 		fmt.Printf("%v was caught!\n", name)
+		pokedex.Pkdex[name] = pokemonInfo
 	}
 
 	time.Sleep(1 * time.Second)
+
+	return nil
+}
+
+func CommandInspect(cnfg *cf.Config, name string, pokedex *pk.Pokedex) error {
+	pokemon, ok := pokedex.Get(name)
+	if !ok {
+		fmt.Println("You have not caught that pokemon")
+		return nil
+	}
+
+	fmt.Printf("Name: %v\n", pokemon.Name)
+	fmt.Printf("Height: %v\n", pokemon.Height)
+	fmt.Printf("Weight: %v\n", pokemon.Weight)
+
+	fmt.Println("Stats:")
+	for _, statValue := range pokemon.Stats {
+		fmt.Printf(" -%v: %v\n", statValue.Stat.Name, statValue.BaseStat)
+	}
+
+	fmt.Println("Types:")
+	for _, tp := range pokemon.Types {
+		fmt.Printf(" - %v\n", tp.Type.Name)
+	}
 
 	return nil
 }
