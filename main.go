@@ -51,6 +51,11 @@ func main() {
 			Description: "Inspect a caught pokemon's info",
 			Callback:    cli.CommandInspect,
 		},
+		"pokedex": {
+			Name:        "pokedex",
+			Description: "Shows you your Pokedex",
+			Callback:    cli.CommandPokedex,
+		},
 	}
 	scanner := bufio.NewScanner(os.Stdin)
 	cnfg := &cf.Config{

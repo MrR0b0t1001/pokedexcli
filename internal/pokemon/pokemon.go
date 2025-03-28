@@ -1,5 +1,7 @@
 package pokemon
 
+import "fmt"
+
 type Pokemon struct {
 	Name string `json:"name"`
 
@@ -52,4 +54,11 @@ func (pkdx *Pokedex) Get(name string) (Pokemon, bool) {
 	}
 
 	return pokemon, true
+}
+
+func (pkdx *Pokedex) Print() {
+	fmt.Println("Your Pokedex:")
+	for _, pokemon := range pkdx.Pkdex {
+		fmt.Printf(" - %v\n", pokemon.Name)
+	}
 }

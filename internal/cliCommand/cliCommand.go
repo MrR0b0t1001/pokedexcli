@@ -244,7 +244,7 @@ func CommandCatch(cnfg *cf.Config, name string, pokedex *pk.Pokedex) error {
 		fmt.Printf("%v was caught!\n", name)
 		pokedex.Pkdex[name] = pokemonInfo
 	}
-
+	fmt.Println("You may now inspect it with the inspect command.")
 	time.Sleep(1 * time.Second)
 
 	return nil
@@ -271,5 +271,10 @@ func CommandInspect(cnfg *cf.Config, name string, pokedex *pk.Pokedex) error {
 		fmt.Printf(" - %v\n", tp.Type.Name)
 	}
 
+	return nil
+}
+
+func CommandPokedex(cnfg *cf.Config, name string, pokedex *pk.Pokedex) error {
+	pokedex.Print()
 	return nil
 }
